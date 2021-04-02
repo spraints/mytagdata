@@ -6,11 +6,11 @@ services:
     ports:
       # I want this to be visible from the tag manager, so it needs to listen on the local network.
       - "0.0.0.0:8900:8900"
+    volumes:
+      - "./config/receiver:/var/receiver:rw"
     command:
       - "-influx"
-      - "db"
-      - "-influx-token"
-      - "abc123def456"
+      - "/var/receiver/config.json"
 
   db:
     image: "influxdb:2.0.4-alpine"
@@ -18,13 +18,6 @@ services:
       - "influxdb:/var/lib/influxdb2"
     ports:
       - "127.0.0.1:8086:8086"
-    environment:
-      DOCKER_INFLUXDB_INIT_USERNAME: "admin"
-      DOCKER_INFLUXDB_INIT_PASSWORD: "p@ssword!"
-      DOCKER_INFLUXDB_INIT_ORG: "wirelesstags"
-      DOCKER_INFLUXDB_INIT_BUCKET: "wirelesstags"
-      # DOCKER_INFLUXDB_INIT_RETENTION: "1000d"
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "abc123def456"
 
 volumes:
   influxdb:
