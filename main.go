@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -36,9 +38,17 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("error reading request body: %v", err)
+			http.Error(w, "unable to read request body", http.StatusInternalServerError)
+			return
+		}
+
 		var update data.WirelessTagUpdate
-		if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+		if err := json.NewDecoder(bytes.NewReader(body)).Decode(&update); err != nil {
 			log.Printf("error: %v", err)
+			log.Printf("request body (cl=%d, size=%d): %s", r.ContentLength, len(body), string(body))
 			http.Error(w, "unable to parse request body", http.StatusUnprocessableEntity)
 			return
 		}
